@@ -6,8 +6,9 @@ from PPlay.keyboard import *
 
 
 class Character():
-    def __init__(self, imagefilename, x, y, hp, speed):
+    def __init__(self, imagefilename, x, y, hp, speed, janela):
         self.image = GameImage(imagefilename)
+        self.janela = janela
         self.width = self.image.width
         self.height = self.image.height
         self.image.x = x
@@ -25,10 +26,10 @@ class Character():
         self.dash_key_released = True
 
         # Configurações das animações
-        self.idle_spritesheet = pygame.image.load("PPlay/player_animation/Cyborg_idle.png")
-        self.run_spritesheet = pygame.image.load("PPlay/player_animation/Cyborg_run.png")
-        self.jump_spritesheet = pygame.image.load("PPlay/player_animation/Cyborg_jump.png")
-        self.dash_spritesheet = pygame.image.load("PPlay/player_animation/Cyborg_dash.png")
+        self.idle_spritesheet = pygame.image.load("player_animation/Cyborg_idle.png")
+        self.run_spritesheet = pygame.image.load("player_animation/Cyborg_run.png")
+        self.jump_spritesheet = pygame.image.load("player_animation/Cyborg_jump.png")
+        self.dash_spritesheet = pygame.image.load("player_animation/Cyborg_dash.png")
 
         self.idle_frames = []
         self.run_frames = []
@@ -40,9 +41,9 @@ class Character():
         self.last_animation_update = pygame.time.get_ticks()
 
         # Carregar frames de animação
-        self.load_animation_frames(self.idle_spritesheet, self.idle_frames, 96, 96, 4)
-        self.load_animation_frames(self.run_spritesheet, self.run_frames, 96, 96, 6)
-        self.load_animation_frames(self.jump_spritesheet, self.jump_frames, 96, 96, 4)
+        self.load_animation_frames(self.idle_spritesheet, self.idle_frames, self.idle_spritesheet.get_width()/4, self.idle_spritesheet.get_height(), 4)
+        self.load_animation_frames(self.run_spritesheet, self.run_frames, self.run_spritesheet.get_width()/6, self.run_spritesheet.get_height(), 6)
+        self.load_animation_frames(self.jump_spritesheet, self.jump_frames, self.jump_spritesheet.get_width()/4, self.jump_spritesheet.get_height(), 4)
         self.load_animation_frames(self.dash_spritesheet, self.dash_frames, 128, 48, 3)
 
         self.active_frames = self.idle_frames  #frames ativos
@@ -95,11 +96,11 @@ class Character():
         pressed_keys = pygame.key.get_pressed()
         if pressed_keys[pygame.K_LEFT]:
             self.direction = -1  # indo p esquerda
-            self.x -= velx
+            self.x -= velx*self.janela.delta_time()
             self.image.x = self.x
         if pressed_keys[pygame.K_RIGHT]:
             self.direction = 1  # indo p direita
-            self.x += velx
+            self.x += velx*self.janela.delta_time()
             self.image.x = self.x
 
     def dash(self, dash_speed):
@@ -120,16 +121,16 @@ class Character():
 
         if self.dash_active:
             if current_time - self.dash_start_time < 300:  #duração do dash (300 = 0.3 segundos)
-                self.x += dash_speed * self.direction
+                self.x += dash_speed * self.janela.delta_time() * self.direction
                 self.image.x = self.x
             else:
                 self.dash_active = False
 
-    def jump(self, gravity=1, jumpheight=20, yvel=20):
+    def jump(self, gravity=11, jumpheight=1600, yvel=1600):
         self.touched_ground = False  # player está no ar
-        self.y -= yvel
+        self.y -= yvel*self.janela.delta_time()
         yvel -= gravity
-        if yvel < -jumpheight:  # final do jump
+        if yvel < -jumpheight - 100:  # final do jump
             yvel = jumpheight
             return False, gravity, jumpheight, yvel
         return True, gravity, jumpheight, yvel
