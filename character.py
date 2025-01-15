@@ -25,11 +25,15 @@ class Character():
         self.direction = 1
         self.dash_key_released = True
 
-        # Configurações das animações
-        self.idle_spritesheet = pygame.image.load("player_animation/Cyborg_idle.png")
-        self.run_spritesheet = pygame.image.load("player_animation/Cyborg_run.png")
-        self.jump_spritesheet = pygame.image.load("player_animation/Cyborg_jump.png")
-        self.dash_spritesheet = pygame.image.load("player_animation/Cyborg_dash.png")
+        # caminho das animacoes
+        self.idle_spritesheet = pygame.image.load(
+            "player_animation/Cyborg_idle.png")
+        self.run_spritesheet = pygame.image.load(
+            "player_animation/Cyborg_run.png")
+        self.jump_spritesheet = pygame.image.load(
+            "player_animation/Cyborg_jump.png")
+        self.dash_spritesheet = pygame.image.load(
+            "player_animation/Cyborg_dash.png")
 
         self.idle_frames = []
         self.run_frames = []
@@ -39,36 +43,36 @@ class Character():
         self.current_frame = 0
         self.animation_speed = 200  # Tempo entre frames
         self.last_animation_update = pygame.time.get_ticks()
-        '''
-        # Carregar frames de animação
-        self.load_animation_frames(self.idle_spritesheet, self.idle_frames, self.idle_spritesheet.get_width()/4, self.idle_spritesheet.get_height(), 4)
-        self.load_animation_frames(self.run_spritesheet, self.run_frames, self.run_spritesheet.get_width()/6, self.run_spritesheet.get_height(), 6)
-        self.load_animation_frames(self.jump_spritesheet, self.jump_frames, self.jump_spritesheet.get_width()/4, self.jump_spritesheet.get_height(), 4)
+
+        #carregando os frames
+        self.load_animation_frames(self.idle_spritesheet, self.idle_frames, self.idle_spritesheet.get_width() // 4,
+                                   self.idle_spritesheet.get_height(), 4)
+        self.load_animation_frames(self.run_spritesheet, self.run_frames, self.run_spritesheet.get_width() // 6,
+                                   self.run_spritesheet.get_height(), 6)
+        self.load_animation_frames(self.jump_spritesheet, self.jump_frames, self.jump_spritesheet.get_width() // 4,
+                                   self.jump_spritesheet.get_height(), 4)
         self.load_animation_frames(self.dash_spritesheet, self.dash_frames, 128, 48, 3)
 
-        self.active_frames = self.idle_frames  #frames ativos
-        '''
-    '''
+        self.active_frames = self.idle_frames  # Frames ativos inicialmente
     def load_animation_frames(self, spritesheet, frame_list, frame_width, frame_height, frame_count):
         for i in range(frame_count):
             frame = spritesheet.subsurface((i * frame_width, 0, frame_width, frame_height))
             frame_list.append(frame)
 
-    
     def draw(self):
-        #animacao
         previous_frames = self.active_frames  #guarda qual era a animação anterior
 
-        if self.dash_active:    #dash
+        # Determina qual animação usar
+        if self.dash_active:  # dash
             self.active_frames = self.dash_frames
-        elif not self.touched_ground:  #pulando
+        elif not self.touched_ground:  # pulando
             self.active_frames = self.jump_frames
-        elif pygame.key.get_pressed()[pygame.K_LEFT] or pygame.key.get_pressed()[pygame.K_RIGHT]:  #correndo
+        elif pygame.key.get_pressed()[pygame.K_LEFT] or pygame.key.get_pressed()[pygame.K_RIGHT]:  # correndo
             self.active_frames = self.run_frames
-        else:  #parado
+        else:  # parado
             self.active_frames = self.idle_frames
 
-        # se a animação mudou, reiniciar o índice do frame
+        # se a animação mudar, vai reiniciar o indice dos frames
         if self.active_frames != previous_frames:
             self.current_frame = 0
 
@@ -78,26 +82,27 @@ class Character():
             self.last_animation_update = now
             self.current_frame = (self.current_frame + 1) % len(self.active_frames)
 
-        # ajustando a posição do personagem no chão
+        #frame atual
         current_frame_image = self.active_frames[self.current_frame]
-        frame_height = current_frame_image.get_height()
-        self.y += self.height - frame_height
-        self.height = frame_height
 
-        # espelhar a animação se estiver indo pra esquerda ou direita, ne
-        if self.direction == -1:  # só precisa mudar pra esquerda pq os sprites sao todos pra dreita
+        # Espelha o frame se necessário
+        if self.direction == -1:  # indo para a esquerda
             current_frame_image = pygame.transform.flip(current_frame_image, True, False)
 
-        # desenha o frame atual
-        self.image.image = current_frame_image
-        self.image.x = self.x
-        self.image.y = self.y
-        self.image.draw()
-    '''
+        #aqui eu declarei esse offset pra centralizar o sprite com o retangulo
+        base_offset_x = 29  #aq é o quando a animação vai mexer no eixo x pra centralizar com o retangulo
+        if self.direction == -1:  #se tiver virado para a esquerda
+            offset_x = (self.width - current_frame_image.get_width()) // 2 - base_offset_x
+        else:  #se tiver virado para a direita
+            offset_x = (self.width - current_frame_image.get_width()) // 2 + base_offset_x
 
-    def draw(self):
-        self.image.draw()
-        
+        offset_y = self.height - current_frame_image.get_height()  #alinha verticalmente
+
+        #aq eu desenho o frame na posição q eu quero
+        self.janela.screen.blit(current_frame_image, (self.image.x + offset_x, self.image.y + offset_y))
+
+        self.janela.screen.blit(current_frame_image, (self.image.x + offset_x, self.image.y + offset_y))
+
     def move(self, velx, esq, dire):
         pressed_keys = pygame.key.get_pressed()
         if pressed_keys[pygame.K_LEFT] and not dire:
