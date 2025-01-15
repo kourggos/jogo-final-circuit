@@ -39,7 +39,7 @@ class Character():
         self.current_frame = 0
         self.animation_speed = 200  # Tempo entre frames
         self.last_animation_update = pygame.time.get_ticks()
-
+        '''
         # Carregar frames de animação
         self.load_animation_frames(self.idle_spritesheet, self.idle_frames, self.idle_spritesheet.get_width()/4, self.idle_spritesheet.get_height(), 4)
         self.load_animation_frames(self.run_spritesheet, self.run_frames, self.run_spritesheet.get_width()/6, self.run_spritesheet.get_height(), 6)
@@ -47,12 +47,14 @@ class Character():
         self.load_animation_frames(self.dash_spritesheet, self.dash_frames, 128, 48, 3)
 
         self.active_frames = self.idle_frames  #frames ativos
-
+        '''
+    '''
     def load_animation_frames(self, spritesheet, frame_list, frame_width, frame_height, frame_count):
         for i in range(frame_count):
             frame = spritesheet.subsurface((i * frame_width, 0, frame_width, frame_height))
             frame_list.append(frame)
 
+    
     def draw(self):
         #animacao
         previous_frames = self.active_frames  #guarda qual era a animação anterior
@@ -91,17 +93,21 @@ class Character():
         self.image.x = self.x
         self.image.y = self.y
         self.image.draw()
+    '''
 
-    def move(self, velx):
+    def draw(self):
+        self.image.draw()
+        
+    def move(self, velx, esq, dire):
         pressed_keys = pygame.key.get_pressed()
-        if pressed_keys[pygame.K_LEFT]:
+        if pressed_keys[pygame.K_LEFT] and not dire:
             self.direction = -1  # indo p esquerda
-            self.x -= velx*self.janela.delta_time()
-            self.image.x = self.x
-        if pressed_keys[pygame.K_RIGHT]:
+            self.image.x -= velx*self.janela.delta_time()
+            #self.image.x = self.x
+        if pressed_keys[pygame.K_RIGHT] and not esq:
             self.direction = 1  # indo p direita
-            self.x += velx*self.janela.delta_time()
-            self.image.x = self.x
+            self.image.x += velx*self.janela.delta_time()
+            #self.image.x = self.x
 
     def dash(self, dash_speed):
         pressed_keys = pygame.key.get_pressed()
@@ -121,22 +127,25 @@ class Character():
 
         if self.dash_active:
             if current_time - self.dash_start_time < 300:  #duração do dash (300 = 0.3 segundos)
-                self.x += dash_speed * self.janela.delta_time() * self.direction
-                self.image.x = self.x
+                self.image.x += dash_speed * self.janela.delta_time() * self.direction
+                #self.image.x = self.x
             else:
                 self.dash_active = False
 
-    def jump(self, gravity=11, jumpheight=1600, yvel=1600):
+    def jump(self, colibaixo, colicima, gravity=11, jumpheight=1600, yvel=1600):
         self.touched_ground = False  # player está no ar
-        self.y -= yvel*self.janela.delta_time()
+        self.image.y -= yvel*self.janela.delta_time()
+        if colicima:
+            yvel = -400
         yvel -= gravity
-        if yvel < -jumpheight - 100:  # final do jump
-            yvel = jumpheight
+        if yvel < -jumpheight - 720 or colibaixo:  # final do jump
+            yvel = 1600
             return False, gravity, jumpheight, yvel
         return True, gravity, jumpheight, yvel
 
     def check_ground(self, floor_y):
-        if self.y >= floor_y - self.height:
+        if self.image.y >= floor_y - self.height:
             self.touched_ground = True
             self.can_dash = True
-            self.y = floor_y - self.height
+            self.image.y = floor_y - self.height
+
