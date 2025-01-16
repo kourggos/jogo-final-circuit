@@ -24,6 +24,20 @@ class Character():
         self.touched_ground = True
         self.direction = 1
         self.dash_key_released = True
+        # --------------
+        self.dashsprite_right = GameImage("dashsprites/dashspriteright.png")
+        self.dashsprite_left = GameImage("dashsprites/dashspriteleft.png")
+        self.dashsprite_up = GameImage("dashsprites/dashspriteup.png")
+        self.dashsprite_down = GameImage("dashsprites/dashspritedown.png")
+        self.dashsprite_ru = GameImage("dashsprites/dashspriteru.png")
+        self.dashsprite_rd = GameImage("dashsprites/dashspriterd.png")
+        self.dashsprite_lu = GameImage("dashsprites/dashspritelu.png")
+        self.dashsprite_ld = GameImage("dashsprites/dashspriteld.png")
+        # ---------------
+        self.dashduration = 0
+        self.dashing = False
+        self.dashes = [False, False, False, False]
+
 
         # caminho das animacoes
         self.idle_spritesheet = pygame.image.load(
@@ -114,28 +128,58 @@ class Character():
             self.image.x += velx*self.janela.delta_time()
             #self.image.x = self.x
 
-    def dash(self, dash_speed):
-        pressed_keys = pygame.key.get_pressed()
-        current_time = pygame.time.get_ticks()
+    def dash(self, dictdash):
+        c = 0
+        if self.dashing and self.dashduration == 0:
+            self.dashes = [dictdash["left"], dictdash["right"], dictdash["up"], dictdash["down"]]
+        for i in self.dashes:
+            if i:
+                c += 1
 
-        if (pressed_keys[pygame.K_LSHIFT] or pressed_keys[pygame.K_RSHIFT]):
-            if self.dash_key_released:
-                self.dash_key_released = False
-                if self.can_dash and not self.dash_active and current_time - self.last_dash_time >= 1500: #1500 = 1,5 segundos de cooldown pra usar o dash
-                    self.dash_active = True
-                    self.dash_start_time = current_time
-                    self.can_dash = False
-                    self.touched_ground = False
+        if c == 1:
+            if dictdash["left"]:
+                self.dashsprite_left.x = self.image.x - self.dashsprite_left.width
+                self.dashsprite_left.y = self.image.y + self.image.height/2 - self.dashsprite_left.height/2
+            elif dictdash["right"]:
+                self.dashsprite_right.x = self.image.x + self.image.width
+                self.dashsprite_right.y = self.image.y + self.dashsprite_right.height/2
+            elif dictdash["up"]:
+                self.dashsprite_up.x = self.image.x + self.image.width/2 - self.dashsprite_up.width/2
+                self.dashsprite_up.y = self.image.y - self.dashsprite_up.height
+            elif dictdash["down"]:
+                self.dashsprite_down.x = self.image.x + self.image.width/2 - self.dashsprite_down.width/2
+                self.dashsprite_down.y = self.image.y + self.image.height
 
-        if not (pressed_keys[pygame.K_LSHIFT] or pressed_keys[pygame.K_RSHIFT]):
-            self.dash_key_released = True
-
-        if self.dash_active:
-            if current_time - self.dash_start_time < 300:  #duração do dash (300 = 0.3 segundos)
-                self.image.x += dash_speed * self.janela.delta_time() * self.direction
-                #self.image.x = self.x
-            else:
-                self.dash_active = False
+        if self.dashduration < 0.08 and self.dashing and c != 0:
+            if c == 1:
+                if self.dashes[0]:
+                    self.dashsprite_left.draw()
+                if self.dashes[1]:
+                    self.dashsprite_right.draw()
+                if self.dashes[2]:
+                    self.dashsprite_up.draw()
+                if self.dashes[3]:
+                    self.dashsprite_down.draw()
+            self.dashduration += self.janela.delta_time()
+        else:
+            self.dashduration = 0
+            self.dashing = False
+            if c == 1:
+                if self.dashes[0]:
+                    self.image.x = self.dashsprite_left.x + self.image.width
+                    #self.image.y = self.dashsprite_left.y - self.dashsprite_left.height/2
+                if self.dashes[1]:
+                    self.image.x = self.dashsprite_right.x + self.dashsprite_right.width
+                    #self.image.y = self.dashsprite_right.y - self.dashsprite_right.height/2
+                if self.dashes[2]:
+                    if self.dashes[2] == "ceil":
+                        self.image.y = 64
+                    else:
+                        self.image.y = self.dashsprite_up.y - self.image.height
+                    #self.image.x = self.dashsprite_up.x + self.dashsprite_up.width/2
+                if self.dashes[3]:
+                    self.image.y = self.dashsprite_down.y + self.image.height
+                    #self.image.x = self.dashsprite_down.x - self.dashsprite_down.width/2
 
     def jump(self, colibaixo, colicima, gravity=11, jumpheight=1600, yvel=1600):
         self.touched_ground = False  # player está no ar
