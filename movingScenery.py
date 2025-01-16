@@ -11,14 +11,14 @@ class Background():
         self.bg_atual = 0
 
     def move(self, player, esq, dire):
-        if player.image.x >= self.janela.width*7.5/21 and pygame.key.get_pressed()[pygame.K_RIGHT] and not self.bg_change and not esq:
-            self.cenario.x -= 1.15 # 0.9
+        if player.image.x >= self.janela.width*7.5/21 and pygame.key.get_pressed()[pygame.K_RIGHT] and not self.bg_change and not esq and not player.dashing:
+            self.cenario.x -= 700*self.janela.delta_time() # 0.9
             if not dire:
                 player.move(-400, esq, dire)
 
-        elif player.image.x >= self.janela.width*7/21 and player.image.x < self.janela.width*7.5/21 and pygame.key.get_pressed()[pygame.K_RIGHT] and not self.bg_change and not esq:
-            self.cenario.x -= 0.9 # 0.6
-        else:
+        elif player.image.x >= self.janela.width*7/21 and player.image.x < self.janela.width*7.5/21 and pygame.key.get_pressed()[pygame.K_RIGHT] and not self.bg_change and not esq and not player.dashing:
+            self.cenario.x -= 400*self.janela.delta_time() # 0.6
+        elif not player.dashing:
             player.move(700, esq, dire)
         if self.cenario.x + self.cenario.width <= self.janela.width:
             self.bg_change = True
@@ -44,10 +44,10 @@ class Floor():
         self.floor_atual = 0
 
     def move(self, player, background, esq):
-        if player.image.x >= self.janela.width*7.5/21 and pygame.key.get_pressed()[pygame.K_RIGHT] and not background.bg_change and not esq:
-            self.floor.x -= 1.15 # 0.9
-        elif player.image.x >= self.janela.width*7/21 and player.image.x < self.janela.width*7.5/21  and pygame.key.get_pressed()[pygame.K_RIGHT] and not background.bg_change and not esq:
-            self.floor.x -= 0.9 # 0.6
+        if player.image.x >= self.janela.width*7.5/21 and pygame.key.get_pressed()[pygame.K_RIGHT] and not background.bg_change and not esq and not player.dashing:
+            self.floor.x -= 700*self.janela.delta_time() # 0.9
+        elif player.image.x >= self.janela.width*7/21 and player.image.x < self.janela.width*7.5/21  and pygame.key.get_pressed()[pygame.K_RIGHT] and not background.bg_change and not esq and not player.dashing:
+            self.floor.x -= 400*self.janela.delta_time() # 0.6
         if self.floor.x + self.floor.width <= 0:
             self.floor, self.nextfloor = self.nextfloor, self.floor
         self.nextfloor.x = self.floor.x + self.floor.width
@@ -63,10 +63,10 @@ class Ceiling():
         self.ceiling_atual = 0
 
     def move(self, player, background, esq):
-        if player.image.x >= self.janela.width*7.5/21 and pygame.key.get_pressed()[pygame.K_RIGHT] and not background.bg_change and not esq:
-            self.ceiling.x -= 1.15 # 0.9
-        elif player.image.x >= self.janela.width*7/21 and player.image.x < self.janela.width*7.5/21 and pygame.key.get_pressed()[pygame.K_RIGHT] and not background.bg_change and not esq:
-            self.ceiling.x -= 0.9 # 0.6
+        if player.image.x >= self.janela.width*7.5/21 and pygame.key.get_pressed()[pygame.K_RIGHT] and not background.bg_change and not esq and not player.dashing:
+            self.ceiling.x -= 700*self.janela.delta_time() # 0.9
+        elif player.image.x >= self.janela.width*7/21 and player.image.x < self.janela.width*7.5/21 and pygame.key.get_pressed()[pygame.K_RIGHT] and not background.bg_change and not esq and not player.dashing:
+            self.ceiling.x -= 400*self.janela.delta_time() # 0.6
         if self.ceiling.x + self.ceiling.width <= 0:
             self.ceiling, self.nextceiling = self.nextceiling, self.ceiling
         self.nextceiling.x = self.ceiling.x + self.ceiling.width
