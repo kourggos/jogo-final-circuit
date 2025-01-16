@@ -12,9 +12,11 @@ class Menu:
         self.mouse = Mouse()
         self.font = pygame.font.Font("fonts/PressStart2P-Regular.ttf", 30)
 
-        pygame.mixer.music.load("PPlay/musics/solar_sailer.mp3")
+        pygame.mixer.music.load("songs/solar_sailer.mp3")
+        pygame.mixer.music.set_volume(0.2)
         pygame.mixer.music.play(-1)
-        self.hover_sound = pygame.mixer.Sound("PPlay/musics/hover.mp3")
+        self.hover_sound = pygame.mixer.Sound("songs/hover.mp3")
+        self.hover_sound.set_volume(0.2)
 
         # inicializando os botoes(x, y, largura, altura)
         self.background = GameImage("scenery/background.png")
@@ -85,7 +87,8 @@ class Ranking:
         self.mouse = Mouse()
         self.font = pygame.font.Font("fonts/PressStart2P-Regular.ttf", 30)
         self.background = GameImage("scenery/background.png")
-        self.hover_sound = pygame.mixer.Sound("PPlay/musics/hover.mp3")
+        self.hover_sound = pygame.mixer.Sound("songs/hover.mp3")
+        self.hover_sound.set_volume(0.2)
 
     def draw_button(self, button_rect, text, active=False):
         # pra quando o mouse passar por cima
@@ -163,7 +166,8 @@ class HowToPlay:
         self.font = pygame.font.Font("fonts/PressStart2P-Regular.ttf", 30)
         self.instructions_image = GameImage("scenery/comojogar.png")
         self.back_button = pygame.Rect(self.janela.width - 350, self.janela.height - 100, 200, 50)
-        self.hover_sound = pygame.mixer.Sound("PPlay/musics/hover.mp3")
+        self.hover_sound = pygame.mixer.Sound("songs/hover.mp3")
+        self.hover_sound.set_volume(0.2)
 
 
     def draw_button(self, button_rect, text, active=False):
