@@ -36,15 +36,21 @@ p_right_wall.x = player.image.x + player.image.width - p_right_wall.width
 l = [p_up_wall,p_down_wall,p_left_wall,p_right_wall]
 # -----------
 all_platforms_list = [("platforms/1x3box.png", minHeight - 448),
-                      ("platforms/1x3box.png", minHeight - 64),   # nome do arquivo e posição Y
-                ("platforms/2x2box.png", minHeight - 128),
+                      ("platforms/1x3box.png", minHeight - 192),   # nome do arquivo e posição Y
+                ("platforms/2x2box.png", minHeight - 192),
                 ("platforms/1x3tube.png", minHeight - 128),
                 ("platforms/3x4hollowbox.png", maxheight),
-                ("platforms/3x4hollowbox.png", minHeight - 192),
+                #("platforms/3x4hollowbox.png", minHeight - 192),
                 ("platforms/3x05shallowplatform.png", minHeight - 320),
                 ("platforms/5x1pillar.png", maxheight),
+                ("platforms/5x1pillar.png", minHeight - 64*5),
                 ("platforms/3x1tube.png", minHeight - 192)]
 game_platforms = []
+# -------------
+game_explosions = []
+explo_sprite = Explosion(0,0, janela)
+# -------------
+game_enemies = []
 jumping = False
 gravity = 11
 jumpheight = 1600
@@ -59,6 +65,9 @@ cima = False
 baixo = False
 cddash = 0.3
 dictdash = {"left":False, "up":False, "down":False, "right":False}
+bipedalenemy = BipedalUnit(0, 0, janela)
+inwall = 0
+c = 0
 
 timer_seconds = 30 #muda aqui o timer do jogo.
 timer_font = pygame.font.Font("fonts/PressStart2P-Regular.ttf", 30)
@@ -138,10 +147,10 @@ while True:
     p_down_wall.x = player.image.x + player.image.width/2 - p_down_wall.width/2
 
     p_left_wall.y = player.image.y
-    p_left_wall.x = player.image.x
+    p_left_wall.x = player.image.x + 10
 
     p_right_wall.y = player.image.y
-    p_right_wall.x = player.image.x + player.image.width - p_right_wall.width
+    p_right_wall.x = player.image.x + player.image.width - p_right_wall.width - 10
 
     # ---------------------
     
@@ -155,62 +164,102 @@ while True:
 
     # ----------- colisões player-plataformas -------------
     
+    inwall = 0
+
+    esq = False
+    dire = False
+    cima = False
+    baixo = False   
+
     for platform in game_platforms:
-        if (Collision.collided(player.image, platform.body) and p_right_wall.x < platform.body.x): #and (player.y + player.height >= platform.body.y or player.y < platform.body.y + platform.body.height):
+        if (Collision.collided(player.image, platform.body) and p_right_wall.x < platform.body.x) or player.inside_wall: #and (player.y + player.height >= platform.body.y or player.y < platform.body.y + platform.body.height):
             coli["esquerda"] = True
             esq = True
         elif not esq:
             coli["esquerda"] = False
         
-        if (Collision.collided(player.image, platform.body) and p_left_wall.x + p_left_wall.width > platform.body.x + platform.body.width):  #and (player.y + player.height >= platform.body.y or player.y < platform.body.y + platform.body.height):
+        if (Collision.collided(player.image, platform.body) and p_left_wall.x + p_left_wall.width > platform.body.x + platform.body.width) or player.inside_wall:  #and (player.y + player.height >= platform.body.y or player.y < platform.body.y + platform.body.height):
             coli["direita"] = True
             dire = True
         elif not dire:
             coli["direita"] = False
     	
-        if (Collision.collided(p_up_wall, platform.body) and p_down_wall.y > platform.body.y + platform.body.height): #and (player.y + player.height >= platform.body.y or player.y < platform.body.y + platform.body.height):
+        if (Collision.collided(p_up_wall, platform.body) and p_down_wall.y > platform.body.y + platform.body.height) or player.inside_wall: #and (player.y + player.height >= platform.body.y or player.y < platform.body.y + platform.body.height):
             coli["cima"] = True
             cima = True
         elif not cima:
             coli["cima"] = False
 
-        if (Collision.collided(p_down_wall, platform.body) and p_up_wall.y < platform.body.y): #and (player.y + player.height >= platform.body.y or player.y < platform.body.y + platform.body.height):
+        if (Collision.collided(p_down_wall, platform.body) and p_up_wall.y < platform.body.y) or player.inside_wall: #and (player.y + player.height >= platform.body.y or player.y < platform.body.y + platform.body.height):
             coli["baixo"] = True
             player.touched_ground = True
             baixo = True
         elif not baixo:
             coli["baixo"] = False
-    
-    esq = False
-    dire = False
-    cima = False
-    baixo = False   
+
+        if Collision.collided(p_left_wall, platform.body) and Collision.collided(p_right_wall, platform.body) and player.image.y + player.image.height/2 > platform.body.y and player.image.y + player.image.height/2 < platform.body.y + platform.body.height:
+            inwall += 1
+
+    if inwall > 0:
+        player.inside_wall = True
+    else:
+        player.inside_wall = False
  
     # movimento das plataformas
     
     for platform in game_platforms:
-        if platform.move(player, background, coli["esquerda"]):
+        if platform.move(player, background, coli["esquerda"]) or background.fading:
             game_platforms.remove(platform)
             del platform
         else:
             platform.draw()
-
-    #print(coli["esquerda"], coli["direita"], coli["cima"], coli["baixo"])
 
 
     # ----------- gerar plataformas, precisa melhorar
     r = randint(0, len(all_platforms_list)-1)
     p = Platform(all_platforms_list[r][0], janela, y=all_platforms_list[r][1])
     for platform in game_platforms:
-        if (platform.body.y < p.body.y + p.body.height and platform.body.y + platform.body.height > p.body.y):
+        #if (platform.body.y < p.body.y + p.body.height and platform.body.y + platform.body.height > p.body.y):
+        if platform.body.x > 2*janela.width/3 or e == r:
             del p
             break
     try:
         if p:
             game_platforms.append(p)
+            e = r
     except:
         pass
-    # --------------
+
+    # -------------- spawnar inimigos
+
+    for platform in game_platforms:
+        if not platform.enemy and platform.body.width > bipedalenemy.body.width and platform.body.y - bipedalenemy.body.height > maxheight:
+            if randint(1,2) == 1:
+                game_enemies.append(BipedalUnit(platform.body.x + platform.body.width/2 - bipedalenemy.body.width/2, platform.body.y - bipedalenemy.body.height, janela))
+            platform.enemy = True
+
+    for enemy in game_enemies:
+        if enemy.move(player, background, coli["esquerda"]) or background.fading:
+            game_enemies.remove(enemy)
+            del enemy
+        elif Collision.collided(player.dashsprite, enemy.body):
+            explo = Explosion(enemy.body.x + enemy.body.width/2 - explo_sprite.body.width/2, enemy.body.y + enemy.body.height - explo_sprite.body.height, janela)
+            game_explosions.append([explo, 0])
+            game_enemies.remove(enemy)
+            del enemy
+        else:
+            enemy.draw()
+
+    for duo in game_explosions:
+        duo[1] += 1
+        if duo[1] >= 61*7/2 or duo[0].move(player, background, coli["esquerda"]):
+            game_explosions.remove(duo)
+            del duo[0]
+        else:
+           duo[0].draw()
+        
+
+    # ---------------
 
     if not coli["baixo"] and player.image.y + player.image.height < floor.floor.y and not jumping:
         player.image.y += 1600*janela.delta_time()
@@ -233,7 +282,7 @@ while True:
         if player.image.y + player.image.height + player.dashsprite_down.height >= minHeight:
             dictdash["down"] = False
     if dictdash["up"]:
-        if player.image.y - player.dashsprite_up.height <= maxheight:
+        if player.image.y - player.dashsprite_up.height - player.image.height <= maxheight:
             dictdash["up"] = "ceil"
 
     if cddash > 1:
@@ -244,8 +293,6 @@ while True:
                 cddash = 0
     else:
         cddash += janela.delta_time()
-
-    #player.dash(1400)
     #reseta quando cai no chao
     if player.image.y >= floor.floor.y - player.image.height:
         player.image.y = floor.floor.y - player.image.height
