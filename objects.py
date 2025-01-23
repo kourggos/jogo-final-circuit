@@ -62,7 +62,6 @@ class Explosion():
         current_frame_image = self.active_frames[self.current_frame]
 
         #aqui eu declarei esse offset pra centralizar o sprite com o retangulo
-        base_offset_x = 29  #aq é o quando a animação vai mexer no eixo x pra centralizar com o retangulo
         offset_x = (self.body.width - current_frame_image.get_width()) // 2
 
         offset_y = self.body.height - current_frame_image.get_height()  #alinha verticalmente
