@@ -25,6 +25,7 @@ class Character():
         self.direction = 1
         self.dash_key_released = True
         # --------------
+        self.point = GameImage("dashsprites/point.png")
         self.dashsprite_right = GameImage("dashsprites/dashspriteright.png")
         self.dashsprite_left = GameImage("dashsprites/dashspriteleft.png")
         self.dashsprite_up = GameImage("dashsprites/dashspriteup.png")
@@ -33,10 +34,12 @@ class Character():
         self.dashsprite_rd = GameImage("dashsprites/dashspriterd.png")
         self.dashsprite_lu = GameImage("dashsprites/dashspritelu.png")
         self.dashsprite_ld = GameImage("dashsprites/dashspriteld.png")
+        self.dashsprite = self.point
         # ---------------
         self.dashduration = 0
         self.dashing = False
         self.dashes = [False, False, False, False]
+        self.inside_wall = False
 
 
         # caminho das animacoes
@@ -48,14 +51,20 @@ class Character():
             "player_animation/Cyborg_jump.png")
         self.dash_spritesheet = pygame.image.load(
             "player_animation/Cyborg_dash.png")
+        self.idle_wall_spritesheet = pygame.image.load(
+            "player_animation/Cyborg_idle_wall.png")
+        self.run_wall_spritesheet = pygame.image.load(
+            "player_animation/Cyborg_run_wall.png")
 
         self.idle_frames = []
         self.run_frames = []
         self.jump_frames = []
         self.dash_frames = []
+        self.idle_wall_frames = []
+        self.run_wall_frames = []
 
         self.current_frame = 0
-        self.animation_speed = 200  # Tempo entre frames
+        self.animation_speed = 100  # Tempo entre frames
         self.last_animation_update = pygame.time.get_ticks()
 
         #carregando os frames
@@ -66,6 +75,10 @@ class Character():
         self.load_animation_frames(self.jump_spritesheet, self.jump_frames, self.jump_spritesheet.get_width() // 4,
                                    self.jump_spritesheet.get_height(), 4)
         self.load_animation_frames(self.dash_spritesheet, self.dash_frames, 128, 48, 3)
+        self.load_animation_frames(self.idle_wall_spritesheet, self.idle_wall_frames, self.idle_wall_spritesheet.get_width() // 4,
+                                   self.idle_wall_spritesheet.get_height(), 4)
+        self.load_animation_frames(self.run_wall_spritesheet, self.run_wall_frames, self.run_wall_spritesheet.get_width() // 6,
+                                   self.run_wall_spritesheet.get_height(), 6)
 
         self.active_frames = self.idle_frames  # Frames ativos inicialmente
     def load_animation_frames(self, spritesheet, frame_list, frame_width, frame_height, frame_count):
@@ -82,9 +95,15 @@ class Character():
         elif not self.touched_ground:  # pulando
             self.active_frames = self.jump_frames
         elif pygame.key.get_pressed()[pygame.K_LEFT] or pygame.key.get_pressed()[pygame.K_RIGHT]:  # correndo
-            self.active_frames = self.run_frames
+            if not self.inside_wall:
+                self.active_frames = self.run_frames
+            else:
+                self.active_frames = self.run_wall_frames
         else:  # parado
-            self.active_frames = self.idle_frames
+            if not self.inside_wall:
+                self.active_frames = self.idle_frames
+            else:
+                self.active_frames = self.idle_wall_frames
 
         # se a animação mudar, vai reiniciar o indice dos frames
         if self.active_frames != previous_frames:
@@ -153,17 +172,22 @@ class Character():
         if self.dashduration < 0.08 and self.dashing and c != 0:
             if c == 1:
                 if self.dashes[0]:
-                    self.dashsprite_left.draw()
+                    self.dashsprite = self.dashsprite_left
+                    self.dashsprite.draw()
                 if self.dashes[1]:
-                    self.dashsprite_right.draw()
+                    self.dashsprite = self.dashsprite_right
+                    self.dashsprite.draw()
                 if self.dashes[2]:
-                    self.dashsprite_up.draw()
+                    self.dashsprite = self.dashsprite_up
+                    self.dashsprite.draw()
                 if self.dashes[3]:
-                    self.dashsprite_down.draw()
+                    self.dashsprite = self.dashsprite_down
+                    self.dashsprite.draw()
             self.dashduration += self.janela.delta_time()
         else:
             self.dashduration = 0
             self.dashing = False
+            self.dashsprite = self.point
             if c == 1:
                 if self.dashes[0]:
                     self.image.x = self.dashsprite_left.x + self.image.width
@@ -198,3 +222,24 @@ class Character():
             self.can_dash = True
             self.image.y = floor_y - self.height
 
+class BipedalUnit():
+    def __init__(self, x, y, janela):
+        self.body = GameImage("enemies/bipedal_unit_inv.png")
+        self.body.x = x
+        self.body.y = y
+        self.janela = janela
+
+        self.idle_spritesheet = pygame.image.load(
+            "enemies/bipedal_unit_walk_inv.png")
+        
+    def draw(self):
+        self.body.draw()
+
+    def move(self, player, background, esq, velx=0, vely=0):
+        if player.image.x >= self.janela.width*7.5/21 and pygame.key.get_pressed()[pygame.K_RIGHT] and not background.bg_change and not esq and not player.dashing:
+            self.body.x -= 1200*self.janela.delta_time() # 0.9
+        elif player.image.x >= self.janela.width*7/21 and player.image.x < self.janela.width*7.5/21  and pygame.key.get_pressed()[pygame.K_RIGHT] and not background.bg_change and not esq and not player.dashing:
+            self.body.x -= 750*self.janela.delta_time() # 0.6
+        if self.body.x + self.body.width < 0:
+            return True
+        return False
