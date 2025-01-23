@@ -10,13 +10,14 @@ class Platform():
         self.enemy = False
 
     def move(self, player, background, esq, velx=0, vely=0):
-        if player.image.x >= self.janela.width*7.5/21 and pygame.key.get_pressed()[pygame.K_RIGHT] and not background.bg_change and not esq and not player.dashing:
-            self.body.x -= 1200*self.janela.delta_time() # 0.9
-        elif player.image.x >= self.janela.width*7/21 and player.image.x < self.janela.width*7.5/21  and pygame.key.get_pressed()[pygame.K_RIGHT] and not background.bg_change and not esq and not player.dashing:
-            self.body.x -= 750*self.janela.delta_time() # 0.6
-        if self.body.x + self.body.width < 0:
-            return True
-        return False
+        if not player.dead:
+            if player.image.x >= self.janela.width*7.5/21 and pygame.key.get_pressed()[pygame.K_RIGHT] and not background.bg_change and not esq and not player.dashing:
+                self.body.x -= 1200*self.janela.delta_time() # 0.9
+            elif player.image.x >= self.janela.width*7/21 and player.image.x < self.janela.width*7.5/21  and pygame.key.get_pressed()[pygame.K_RIGHT] and not background.bg_change and not esq and not player.dashing:
+                self.body.x -= 750*self.janela.delta_time() # 0.6
+            if self.body.x + self.body.width < 0:
+                return True
+            return False
 
     def draw(self):
         self.body.draw()
@@ -40,17 +41,20 @@ class Explosion():
         
         self.active_frames = self.explosion_frames
 
+        self.explosion_sound = pygame.mixer.Sound("songs/machine_explosion.mp3")
+        self.explosion_sound.set_volume(0.4)
+        self.sound_played = False  # p/ n tocar mts vezes
+
     def load_animation_frames(self, spritesheet, frame_list, frame_width, frame_height, frame_count):
         for i in range(frame_count):
             frame = spritesheet.subsurface((i * frame_width, 0, frame_width, frame_height))
             frame_list.append(frame)
 
-    def draw(self):
-        previous_frames = self.active_frames  #guarda qual era a animação anterior
+    def draw(self): 
+        if not self.sound_played:
+            self.explosion_sound.play()
+            self.sound_played = True
 
-        # se a animação mudar, vai reiniciar o indice dos frames
-        #if self.active_frames != previous_frames:
-            #self.current_frame = 0
 
         # atualizando a animação
         now = pygame.time.get_ticks()
@@ -62,6 +66,7 @@ class Explosion():
         current_frame_image = self.active_frames[self.current_frame]
 
         #aqui eu declarei esse offset pra centralizar o sprite com o retangulo
+
         offset_x = (self.body.width - current_frame_image.get_width()) // 2
 
         offset_y = self.body.height - current_frame_image.get_height()  #alinha verticalmente
@@ -72,11 +77,12 @@ class Explosion():
         self.janela.screen.blit(current_frame_image, (self.body.x + offset_x, self.body.y + offset_y))
 
     def move(self, player, background, esq, velx=0, vely=0):
-        if player.image.x >= self.janela.width*7.5/21 and pygame.key.get_pressed()[pygame.K_RIGHT] and not background.bg_change and not esq and not player.dashing:
-            self.body.x -= 1200*self.janela.delta_time() # 0.9
-        elif player.image.x >= self.janela.width*7/21 and player.image.x < self.janela.width*7.5/21  and pygame.key.get_pressed()[pygame.K_RIGHT] and not background.bg_change and not esq and not player.dashing:
-            self.body.x -= 750*self.janela.delta_time() # 0.6
-        if self.body.x + self.body.width < 0:
-            return True
-        return False
+        if not player.dead:
+            if player.image.x >= self.janela.width*7.5/21 and pygame.key.get_pressed()[pygame.K_RIGHT] and not background.bg_change and not esq and not player.dashing:
+                self.body.x -= 1200*self.janela.delta_time() # 0.9
+            elif player.image.x >= self.janela.width*7/21 and player.image.x < self.janela.width*7.5/21  and pygame.key.get_pressed()[pygame.K_RIGHT] and not background.bg_change and not esq and not player.dashing:
+                self.body.x -= 750*self.janela.delta_time() # 0.6
+            if self.body.x + self.body.width < 0:
+                return True
+            return False
 
