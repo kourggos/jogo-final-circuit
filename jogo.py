@@ -72,7 +72,7 @@ inwall = 0
 c = 0
 velx = 750
 
-timer_seconds = 10 #muda aqui o timer do jogo.
+timer_seconds = 12 #muda aqui o timer do jogo.
 timer_font = pygame.font.Font("fonts/PressStart2P-Regular.ttf", 30)
 fps_font = pygame.font.Font("fonts/PressStart2P-Regular.ttf", 14)
 pygame.mixer.music.load("songs/TRON_legacy.mp3")
@@ -82,13 +82,16 @@ timer_running = False
 ft = True
 timer_plus = 1
 bg_atual = background.bg_atual
-
+c_start = 0
 pontos = 0
 
 def format_time(seconds):
-    minutes = seconds // 60
-    seconds = seconds % 60
-    return str(int(minutes)) + ":" + str("%02d" % int(seconds)) + ":" +  str("%.2f" % seconds)[-2:]
+    if seconds > 0:
+        minutes = seconds // 60
+        seconds = seconds % 60
+        return str(int(minutes)) + ":" + str("%02d" % int(seconds)) + ":" +  str("%.2f" % seconds)[-2:]
+    else:
+        return str(int(0)) + ":" + str("%02d" % int(0)) + ":" +  str("%.2f" % 0)[-2:]
 
 def save_to_ranking(player_name, score):
     try:
@@ -109,17 +112,69 @@ def game_over():
     timer_running = False
 
     game_over_surface = timer_font.render("VOCÊ PERDEU!", False, (255, 0, 0))
-    janela.get_screen().blit(game_over_surface, (janela.width / 2 - 200, janela.height / 2 - 50))
+    enter_name_surface = timer_font.render("Insira o seu nome:", False, (255, 255, 255))
 
-    janela.update()
-    print("Digite seu nome para salvar no ranking: ")
-    player_name = input().strip()
+    # Usando a fonte personalizada
+    base_font = pygame.font.Font("fonts/PressStart2P-Regular.ttf", 20)
+    user_text = ''
+    input_rect = pygame.Rect(janela.width / 2 - 200, janela.height / 2 + 50, 400, 50)
+    active = False
+
+    clock = pygame.time.Clock()
+    player_name = None
+
+    while True:
+        delta_time = clock.tick(60) / 1000
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if input_rect.collidepoint(event.pos):
+                    active = True
+                else:
+                    active = False
+
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_BACKSPACE:
+                    user_text = user_text[:-1]  #remove o último caractere
+                elif event.key == pygame.K_RETURN:
+                    if user_text.strip():
+                        player_name = user_text.strip()
+                        break
+                else:
+                    #ver largura do texto
+                    text_surface = base_font.render(user_text + event.unicode, False, (255, 255, 255))
+                    if text_surface.get_width() <= input_rect.width - 10:  # 10px de margem
+                        user_text += event.unicode
+
+        if player_name:
+            break
+
+        # Desenha a tela
+        janela.get_screen().blit(game_over_surface, (janela.width / 2 - 200, janela.height / 2 - 100))
+        janela.get_screen().blit(enter_name_surface, (janela.width / 2 - 250, janela.height / 2 - 20))
+
+    
+
+        #fundo
+        pygame.draw.rect(janela.get_screen(), (0, 0, 0), input_rect)
+        #borda
+        pygame.draw.rect(janela.get_screen(), (255, 255, 255), input_rect, 2)
+
+        #desenhando o texto
+        text_surface = base_font.render(user_text, False, (255, 255, 255))
+        janela.get_screen().blit(text_surface, (input_rect.x + 5, input_rect.y + 5))
+
+        pygame.display.flip()
+
     if player_name:
         save_to_ranking(player_name, pontos)
 
     pygame.quit()
-    subprocess.run(["python", "menu.py"])
-    exit()  # Sai do jogo
+    subprocess.run(["python", "main.py"])
+    exit()
 
 
 while True:
@@ -130,26 +185,34 @@ while True:
         fps = frames
         frames = 0
         cronometro = 0
+    
+    if pygame.key.get_pressed()[pygame.K_c]:
+        timer_seconds += 1;
 
         # Atualizando o timer
     if timer_running:
         if ft:
-            timer_seconds = 10
+            timer_seconds = 12
             ft = False
         else:
             timer_seconds -= janela.delta_time()
         pontos += janela.delta_time()  #+1 ponto todo segundo
         if timer_seconds <= 0:
-            result = game_over()
-            if result == "menu":
-                break
+            player.dead = True
+
     # --------------------
     
     if pygame.key.get_pressed()[pygame.K_SPACE] or pygame.key.get_pressed()[pygame.K_LEFT] or pygame.key.get_pressed()[pygame.K_RIGHT] or pygame.key.get_pressed()[pygame.K_LSHIFT]:
         timer_running = True
+    if c_start < 1:
+        coli["esquerda"] = True
+        coli["direita"] = True
+        coli["cima"] = True
+        coli["baixo"] = True
     background.move(player, coli["esquerda"], coli["direita"])
     floor.move(player, background, coli["esquerda"])
     ceiling.move(player, background, coli["esquerda"])
+    c_start += janela.delta_time()
 
     p_up_wall.y = player.image.y
     p_up_wall.x = player.image.x + player.image.width/2 - p_up_wall.width/2
@@ -242,7 +305,6 @@ while True:
     r = randint(0, len(all_platforms_list)-1)
     p = Platform(all_platforms_list[r][0], janela, y=all_platforms_list[r][1])
     for platform in game_platforms:
-        #if (platform.body.y < p.body.y + p.body.height and platform.body.y + platform.body.height > p.body.y):
         if platform.body.x > 2*janela.width/3 or e == r or (carguyatual.body.x < janela.width and carguyatual.body.x + carguyatual.body.width > janela.width):
             del p
             break
@@ -382,8 +444,6 @@ while True:
 
     if not player.dashing:
         player.draw()
-    #for wall in l:
-    #    wall.draw()
 
     #desenhando o temporizador
     if timer_running:
@@ -397,5 +457,4 @@ while True:
     
     fps_surface = fps_font.render("FPS: " + str(fps), False, (255, 255, 255))
     janela.get_screen().blit(fps_surface, (0, 10))
-    #janela.draw_text("fps:" + str(fps), 0, 0, size=14, color=(255,255,255))
     janela.update()
