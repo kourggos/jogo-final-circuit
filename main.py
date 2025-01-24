@@ -2,15 +2,13 @@ import pygame
 from PPlay.window import Window
 from PPlay.gameimage import GameImage
 from PPlay.mouse import Mouse
-import os
-import subprocess
-
 
 class Menu:
     def __init__(self, janela):
         self.janela = janela
         self.mouse = Mouse()
         self.font = pygame.font.Font("fonts/PressStart2P-Regular.ttf", 30)
+        self.fonttitle = pygame.font.Font("fonts/PressStart2P-Regular.ttf", 70)
 
         pygame.mixer.music.load("songs/solar_sailer.mp3")
         pygame.mixer.music.set_volume(0.2)
@@ -27,7 +25,7 @@ class Menu:
 
     def draw_button(self, button_rect, text, active=False):
         # pra quando o mouse passar por cima
-        color = (0, 255, 0) if active else (255, 255, 255)
+        color = (241, 241, 44) if active else (255, 255, 255)
         pygame.draw.rect(self.janela.screen, color, button_rect, 2)
         label = self.font.render(text, False, color)
         self.janela.screen.blit(label, (button_rect.x + (button_rect.width - label.get_width()) / 2,
@@ -65,6 +63,8 @@ class Menu:
             elif not (play_active or how_to_play_active or rank_active or exit_active):
                 last_played_button = None  #reset se n tiver em nenhum botao
 
+            title_surface = self.fonttitle.render("Final Circuit", False, (255, 255, 255))
+            self.janela.get_screen().blit(title_surface, (self.janela.width/2 - title_surface.get_width()/2, self.janela.height/7))
             self.draw_button(self.play_button, "JOGAR", play_active)
             self.draw_button(self.how_to_play_button, "COMO JOGAR", how_to_play_active)
             self.draw_button(self.rank_button, "RANKING", rank_active)
@@ -92,7 +92,7 @@ class Ranking:
 
     def draw_button(self, button_rect, text, active=False):
         # pra quando o mouse passar por cima
-        color = (0, 255, 0) if active else (255, 255, 255)
+        color = (241, 241, 44) if active else (255, 255, 255)
         pygame.draw.rect(self.janela.screen, color, button_rect, 2)
         label = self.font.render(text, False, color)
         self.janela.screen.blit(label, (button_rect.x + (button_rect.width - label.get_width()) / 2,
@@ -172,7 +172,7 @@ class HowToPlay:
 
     def draw_button(self, button_rect, text, active=False):
         # se o mouse ta em cima
-        color = (0, 255, 0) if active else (255, 255, 255)
+        color = (241, 241, 44) if active else (255, 255, 255)
         pygame.draw.rect(self.janela.screen, color, button_rect, 2)
         label = self.font.render(text, False, color)
         self.janela.screen.blit(label, (button_rect.x + (button_rect.width - label.get_width()) / 2,
@@ -203,8 +203,8 @@ class HowToPlay:
 
 
 def run_game():
-    import main  # Importa o script main diretamente
-    main.main()  # Chama a função main() do main.py
+    import jogo  # Importa o script main diretamente
+    jogo.main()  # Chama a função main() do main.py
     exit()
 
 
