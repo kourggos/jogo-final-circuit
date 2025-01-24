@@ -49,7 +49,7 @@ all_platforms_list = [("platforms/1x3box.png", minHeight - 384),
 game_platforms = []
 # -------------
 game_explosions = []
-explo_sprite = Explosion(0,0, janela)
+explo_sprite = Explosion(0, 0, janela)
 # -------------
 game_enemies = []
 jumping = False
@@ -72,12 +72,15 @@ inwall = 0
 c = 0
 velx = 750
 
-timer_seconds = 100 #muda aqui o timer do jogo.
+timer_seconds = 10 #muda aqui o timer do jogo.
 timer_font = pygame.font.Font("fonts/PressStart2P-Regular.ttf", 30)
+fps_font = pygame.font.Font("fonts/PressStart2P-Regular.ttf", 14)
 pygame.mixer.music.load("songs/TRON_legacy.mp3")
 pygame.mixer.music.set_volume(0)
 pygame.mixer.music.play(-1)
 timer_running = True
+timer_plus = 1
+bg_atual = background.bg_atual
 
 pontos = 0
 
@@ -104,7 +107,7 @@ def game_over():
     global timer_running
     timer_running = False
 
-    game_over_surface = timer_font.render("VOCÊ PERDEU!", True, (255, 0, 0))
+    game_over_surface = timer_font.render("VOCÊ PERDEU!", False, (255, 0, 0))
     janela.get_screen().blit(game_over_surface, (janela.width / 2 - 200, janela.height / 2 - 50))
 
     janela.update()
@@ -268,14 +271,18 @@ while True:
             game_explosions.append([explo, 0])
             game_enemies.remove(enemy)
             del enemy
-            timer_seconds += randint(0, 3)
+            a = randint(1,3)
+            timer_seconds += a
+            timer_plus = 0
         elif Collision.collided(p_up_wall, enemy.body) or Collision.collided(p_down_wall, enemy.body) or Collision.collided(p_left_wall, enemy.body) or Collision.collided(p_right_wall, enemy.body):
                 if player.postdash:
                     explo = Explosion(enemy.body.x + enemy.body.width/2 - explo_sprite.body.width/2, enemy.body.y + enemy.body.height - explo_sprite.body.height, janela)
                     game_explosions.append([explo, 0])
                     game_enemies.remove(enemy)
                     del enemy
-                    timer_seconds += randint(3, 5)
+                    a = randint(1,3)
+                    timer_seconds += a
+                    timer_plus = 0
                 else:
                     player.dead = True
                     enemy.draw()
@@ -289,6 +296,11 @@ while True:
             del duo[0]
         else:
            duo[0].draw()
+
+    if bg_atual != background.bg_atual:
+        timer_seconds += 10
+        bg_atual = background.bg_atual
+
 
     # ---------------
 
@@ -369,8 +381,14 @@ while True:
     #desenhando o temporizador
     if timer_running:
         timer_text = format_time(timer_seconds)
-        timer_surface = timer_font.render(timer_text, True, (255, 255, 255))
+        timer_surface = timer_font.render(timer_text, False, (255, 255, 255))
         janela.get_screen().blit(timer_surface, (janela.width - timer_surface.get_width(), 10))
-
-    janela.draw_text("fps:" + str(fps), 0, 0, size=14, color=(255,255,255))
+        if timer_plus < 1:
+            plus_surface = timer_font.render("+ " + str(a), False, (241, 241, 44))
+            janela.get_screen().blit(plus_surface, (janela.width - plus_surface.get_width(), 50))
+            timer_plus += janela.delta_time()
+    
+    fps_surface = fps_font.render("FPS: " + str(fps), False, (255, 255, 255))
+    janela.get_screen().blit(fps_surface, (0, 10))
+    #janela.draw_text("fps:" + str(fps), 0, 0, size=14, color=(255,255,255))
     janela.update()
