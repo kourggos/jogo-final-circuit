@@ -53,7 +53,7 @@ explo_sprite = Explosion(0,0, janela)
 # -------------
 game_enemies = []
 jumping = False
-gravity = 14
+gravity = 5000
 jumpheight = 1600
 yvel = 1600
 frames = 0
@@ -72,7 +72,7 @@ inwall = 0
 c = 0
 velx = 750
 
-timer_seconds = 10 #muda aqui o timer do jogo.
+timer_seconds = 100 #muda aqui o timer do jogo.
 timer_font = pygame.font.Font("fonts/PressStart2P-Regular.ttf", 30)
 pygame.mixer.music.load("songs/TRON_legacy.mp3")
 pygame.mixer.music.set_volume(0)
@@ -159,6 +159,7 @@ while True:
     if pygame.key.get_pressed()[pygame.K_SPACE] and not jumping and coli["baixo"] and not player.inside_wall and not player.dead:
         jumping = True
         coli["baixo"] = False
+        yvel = 1600
     if jumping:
         jumping, gravity, jumpheight, yvel = player.jump(coli["baixo"], coli["cima"], gravity, jumpheight, yvel)
 
@@ -208,7 +209,7 @@ while True:
         player.inside_wall = True
     else:
         player.inside_wall = False
- 
+
     if player.inside_wall:
         player.in_wall_timer += janela.delta_time()
     else:
@@ -268,7 +269,7 @@ while True:
             game_enemies.remove(enemy)
             del enemy
             timer_seconds += randint(0, 3)
-        elif Collision.collided(player.image, enemy.body):
+        elif Collision.collided(p_up_wall, enemy.body) or Collision.collided(p_down_wall, enemy.body) or Collision.collided(p_left_wall, enemy.body) or Collision.collided(p_right_wall, enemy.body):
                 if player.postdash:
                     explo = Explosion(enemy.body.x + enemy.body.width/2 - explo_sprite.body.width/2, enemy.body.y + enemy.body.height - explo_sprite.body.height, janela)
                     game_explosions.append([explo, 0])
@@ -340,7 +341,7 @@ while True:
         player.postdash = True
         yvel = -100
     elif not jumping:
-        yvel -= gravity
+        yvel -= gravity*janela.delta_time()
     else:
         player.postdash = False
     
@@ -349,6 +350,7 @@ while True:
         player.image.y = floor.floor.y - player.image.height
         player.touched_ground = True  # jogador ta no chão
         coli["baixo"] = True
+        yvel = -100
         baixo = True
         jumping = False
         player.can_dash = True  # pra usar o dash dnv
@@ -356,15 +358,13 @@ while True:
         coli["cima"] = True
         cima = True
 
-    #print(coli["cima"], cima)
-
     if player.dead and player.current_frame + 1 == len(player.active_frames):
         result = game_over()
 
     if not player.dashing:
         player.draw()
-    for wall in l:
-        wall.draw()
+    #for wall in l:
+    #    wall.draw()
 
     #desenhando o temporizador
     if timer_running:
