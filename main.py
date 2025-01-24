@@ -76,7 +76,7 @@ timer_seconds = 10 #muda aqui o timer do jogo.
 timer_font = pygame.font.Font("fonts/PressStart2P-Regular.ttf", 30)
 fps_font = pygame.font.Font("fonts/PressStart2P-Regular.ttf", 14)
 pygame.mixer.music.load("songs/TRON_legacy.mp3")
-pygame.mixer.music.set_volume(0)
+pygame.mixer.music.set_volume(0.2)
 pygame.mixer.music.play(-1)
 timer_running = False
 ft = True
