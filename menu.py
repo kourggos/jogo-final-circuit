@@ -29,7 +29,7 @@ class Menu:
         # pra quando o mouse passar por cima
         color = (0, 255, 0) if active else (255, 255, 255)
         pygame.draw.rect(self.janela.screen, color, button_rect, 2)
-        label = self.font.render(text, True, color)
+        label = self.font.render(text, False, color)
         self.janela.screen.blit(label, (button_rect.x + (button_rect.width - label.get_width()) / 2,
                                         button_rect.y + (button_rect.height - label.get_height()) / 2))
 
@@ -94,7 +94,7 @@ class Ranking:
         # pra quando o mouse passar por cima
         color = (0, 255, 0) if active else (255, 255, 255)
         pygame.draw.rect(self.janela.screen, color, button_rect, 2)
-        label = self.font.render(text, True, color)
+        label = self.font.render(text, False, color)
         self.janela.screen.blit(label, (button_rect.x + (button_rect.width - label.get_width()) / 2,
                                         button_rect.y + (button_rect.height - label.get_height()) / 2))
 
@@ -131,8 +131,8 @@ class Ranking:
                 score_x = self.janela.width / 2 + 200  #pos coluna para pontuacao
 
                 #desenhar o nome e a pontuação
-                name_label = self.font.render(f"{i + 1}. {player_name}", True, (255, 255, 255))
-                score_label = self.font.render(f"{score} pontos", True, (255, 255, 255))
+                name_label = self.font.render(f"{i + 1}. {player_name}", False, (255, 255, 255))
+                score_label = self.font.render(f"{score} pontos", False, (255, 255, 255))
 
                 self.janela.screen.blit(name_label, (name_x, y_offset))
                 self.janela.screen.blit(score_label, (score_x, y_offset))
@@ -174,7 +174,7 @@ class HowToPlay:
         # se o mouse ta em cima
         color = (0, 255, 0) if active else (255, 255, 255)
         pygame.draw.rect(self.janela.screen, color, button_rect, 2)
-        label = self.font.render(text, True, color)
+        label = self.font.render(text, False, color)
         self.janela.screen.blit(label, (button_rect.x + (button_rect.width - label.get_width()) / 2,
                                         button_rect.y + (button_rect.height - label.get_height()) / 2))
 
