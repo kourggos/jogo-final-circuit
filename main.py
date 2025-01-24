@@ -88,7 +88,7 @@ pontos = 0
 def format_time(seconds):
     minutes = seconds // 60
     seconds = seconds % 60
-    return str(int(minutes)) + ":" + str(int(seconds)) + ":" +  str("%.2f" % seconds)[3:]
+    return str(int(minutes)) + ":" + str("%02d" % int(seconds)) + ":" +  str("%.2f" % seconds)[-2:]
 
 def save_to_ranking(player_name, score):
     try:
