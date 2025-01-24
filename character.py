@@ -312,13 +312,10 @@ class Character():
     def jump(self, colibaixo, colicima, gravity=11, jumpheight=1600, yvel=1600):
         self.touched_ground = False  # player está no ar
         if not self.dashing:
-            self.image.y -= yvel*self.janela.delta_time() 
+            self.image.y -= yvel*self.janela.delta_time()
             if colicima:
-                print(1)
                 yvel = -400
-            else:
-                print(0)
-            yvel -= gravity
+            yvel -= gravity*self.janela.delta_time()
         if yvel < -jumpheight - 720 or colibaixo:  # final do jump
             yvel = 1600
             return False, gravity, jumpheight, yvel
